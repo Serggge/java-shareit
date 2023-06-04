@@ -13,7 +13,7 @@ public class Item {
     String description;
     Boolean available;
     User owner;
-    
+
     public Item withId(long id) {
         return Item.builder()
                 .id(id)
@@ -23,7 +23,7 @@ public class Item {
                 .owner(owner)
                 .build();
     }
-    
+
     public Item withOwner(User owner) {
         return Item.builder()
                 .id(id)
@@ -33,4 +33,5 @@ public class Item {
                 .owner(owner)
                 .build();
     }
+
 }

@@ -53,4 +53,5 @@ public class UserRepositoryImpl implements UserRepository {
                 .map(User::getId)
                 .findAny();
     }
+
 }
