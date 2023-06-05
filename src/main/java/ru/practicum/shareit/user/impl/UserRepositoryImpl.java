@@ -3,7 +3,7 @@ package ru.practicum.shareit.user.impl;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 

@@ -2,12 +2,14 @@ package ru.practicum.shareit.user.model;
 
 import lombok.Builder;
 import lombok.Value;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import lombok.extern.jackson.Jacksonized;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
 
 @Value
 @Builder
+@Jacksonized
 public class User {
 
     long id;
@@ -24,4 +26,5 @@ public class User {
                 .email(email)
                 .build();
     }
+
 }
