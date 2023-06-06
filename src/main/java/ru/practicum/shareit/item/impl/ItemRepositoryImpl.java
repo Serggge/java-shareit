@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 @Repository
 public class ItemRepositoryImpl implements ItemRepository {
 
-    public static long count;
+    private static long count;
     private final Map<Long, Item> items = new HashMap<>();
 
     @Override
