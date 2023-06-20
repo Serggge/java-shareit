@@ -11,6 +11,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor(onConstructor__ = @Autowired)
@@ -53,7 +54,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<Item> getItemsByUserId(long userId) {
         userService.checkUserExistence(userId);
-        return itemRepository.findItemsByUserId(userId);
+        return itemRepository.findAllByOwnerId(userId);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
         if (query == null || query.isBlank()) {
             return Collections.emptyList();
         }
-        return itemRepository.findByQuery(query);
+        return itemRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query);
     }
 
     private void checkItemExistence(long itemId) {
@@ -85,7 +86,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void checkItemOwner(Item item) {
-        if (!itemRepository.isSomeOwner(item)) {
+        Optional<Long> ownerId = itemRepository.findOwnerIdByItemId(item.getId());
+        if (ownerId.isEmpty() || !ownerId.get().equals(item.getOwner().getId())) {
             throw new ItemNotFoundException(
                     String.format("Пользователь id=%d не является владельцем вещи id=%d",
                             item.getOwner().getId(), item.getId()));

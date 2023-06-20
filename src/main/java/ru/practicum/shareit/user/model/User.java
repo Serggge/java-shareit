@@ -1,15 +1,23 @@
 package ru.practicum.shareit.user.model;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
+import org.hibernate.annotations.Immutable;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-@Value
+@Entity
+@Immutable
+@Table(name = "users")
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
     @NotBlank
     String name;

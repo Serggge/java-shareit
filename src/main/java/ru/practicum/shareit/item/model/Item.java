@@ -1,17 +1,27 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
+import org.hibernate.annotations.Immutable;
 import ru.practicum.shareit.user.model.User;
+import javax.persistence.*;
 
-@Value
+@Entity
+@Immutable
+@Table(name = "items")
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Item {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
     String name;
     String description;
     Boolean available;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     User owner;
 
     public Item withId(long id) {
