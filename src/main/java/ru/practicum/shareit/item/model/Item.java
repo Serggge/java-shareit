@@ -1,12 +1,10 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
-import org.hibernate.annotations.Immutable;
 import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 
 @Entity
-@Immutable
 @Table(name = "items")
 @Data
 @Builder
@@ -16,7 +14,7 @@ public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    Long id;
     String name;
     String description;
     Boolean available;

@@ -62,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
         if (query == null || query.isBlank()) {
             return Collections.emptyList();
         }
-        return itemRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query);
+        return itemRepository.findAllByQuery(query.toLowerCase());
     }
 
     private void checkItemExistence(long itemId) {
