@@ -1,13 +1,10 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.booking.model;
 
 import lombok.Data;
-import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
@@ -23,9 +20,9 @@ public class Booking {
     private Item item;
     @Enumerated(EnumType.STRING)
     private Status status;
-    @ElementCollection
-    @CollectionTable(name = "booking_days", joinColumns = @JoinColumn(name = "item_id"))
-    @Column(name = "date_of_booking")
-    private Set<LocalDate> bookingDays = new HashSet<>();
+    @Column(name = "start_booking")
+    private LocalDateTime start;
+    @Column(name = "end_booking")
+    private LocalDateTime end;
 
 }

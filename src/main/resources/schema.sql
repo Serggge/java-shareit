@@ -22,13 +22,8 @@ CREATE TABLE IF NOT EXISTS bookings
     user_id BIGINT NOT NULL,
     item_id BIGINT                                              NOT NULL,
     status  VARCHAR(50),
+    start_booking TIMESTAMP,
+    end_booking TIMESTAMP,
     CONSTRAINT fk_booking_items FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
     CONSTRAINT fk_booking_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS booking_days
-(
-    item_id BIGINT NOT NULL REFERENCES items(id),
-    date_of_booking DATE NOT NULL,
-    CONSTRAINT composite_pk_booking_days PRIMARY KEY (item_id, date_of_booking)
 );

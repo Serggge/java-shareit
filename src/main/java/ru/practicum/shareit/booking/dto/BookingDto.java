@@ -3,8 +3,9 @@ package ru.practicum.shareit.booking.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.shareit.booking.model.Status;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -12,7 +13,8 @@ import java.time.LocalDate;
 public class BookingDto {
 
     private long itemId;
-    private LocalDate start;
-    private LocalDate end;
+    private LocalDateTime start;
+    private LocalDateTime end;
+    private Status status;
 
 }

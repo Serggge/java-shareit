@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.model.Booking;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,20 +11,16 @@ public class BookingMapper {
 
     public Booking mapToBooking(BookingDto bookingDto) {
         Booking entity = new Booking();
-        LocalDate currentDay = bookingDto.getStart();
-        while (currentDay.isBefore(bookingDto.getEnd()) || currentDay.isEqual(bookingDto.getEnd())) {
-            entity.getBookingDays().add(currentDay);
-            currentDay.plusDays(1);
-        }
+        entity.setStart(bookingDto.getStart());
+        entity.setEnd(bookingDto.getEnd());
         return entity;
     }
 
     public BookingDto mapToDto(Booking booking) {
         BookingDto dto = new BookingDto();
         dto.setItemId(booking.getItem().getId());
-        TreeSet<LocalDate> dates = new TreeSet<>(booking.getBookingDays());
-        dto.setStart(dates.first());
-        dto.setEnd(dates.last());
+        dto.setStart(booking.getStart());
+        dto.setEnd(booking.getEnd());
         return dto;
     }
 
