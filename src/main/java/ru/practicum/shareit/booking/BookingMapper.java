@@ -1,12 +1,12 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 
+@Component
 public class BookingMapper {
 
     public Booking mapToBooking(BookingDto bookingDto) {

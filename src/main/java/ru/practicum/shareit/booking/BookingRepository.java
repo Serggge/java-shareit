@@ -5,4 +5,5 @@ import ru.practicum.shareit.booking.model.Booking;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
+
 }

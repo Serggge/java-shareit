@@ -21,7 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User add(User user) {
-        checkUserAlreadyRegistered(user);
+        //checkUserAlreadyRegistered(user);
         user = userRepository.save(user);
         log.info("Создан новый пользователь: {}", user);
         return user;
