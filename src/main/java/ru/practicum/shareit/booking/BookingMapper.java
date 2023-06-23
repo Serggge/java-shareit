@@ -21,6 +21,7 @@ public class BookingMapper {
         dto.setItemId(booking.getItem().getId());
         dto.setStart(booking.getStart());
         dto.setEnd(booking.getEnd());
+        dto.setStatus(booking.getStatus());
         return dto;
     }
 

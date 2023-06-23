@@ -67,19 +67,23 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto getById(long bookingId) {
+    public BookingDto getById(long bookingId, long userId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new BookingNotFoundException("Бронирование не найдено"));
-        return bookingMapper.mapToDto(booking);
+        if (booking.getUser().getId() == userId || booking.getItem().getOwner().getId() == userId) {
+            return bookingMapper.mapToDto(booking);
+        } else {
+         throw new UserNotFoundException("Пользователю запрещёно просматривать информацию по бронированию");
+        }
     }
 
     @Override
-    public List<BookingDto> getUserBookings(long userId) {
+    public List<BookingDto> getUserBookings(long userId, String state) {
         return null;
     }
 
     @Override
-    public List<BookingDto> getBookings(long userId) {
+    public List<BookingDto> getItemsBookings(long userId, String state) {
         return null;
     }
 }
