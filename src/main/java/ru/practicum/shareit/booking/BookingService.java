@@ -7,7 +7,7 @@ public interface BookingService {
 
     BookingDto addNew(long userId, BookingDto bookingDto);
 
-    void approve(long userId, long bookingId, String approved);
+    BookingDto approve(long userId, long bookingId, String approved);
 
     BookingDto getById(long bookingId, long userId);
 

@@ -15,7 +15,8 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
+    @JoinColumn(name = "user_id")
+    private User booker;
     @ManyToOne(fetch = FetchType.LAZY)
     private Item item;
     @Enumerated(EnumType.STRING)
