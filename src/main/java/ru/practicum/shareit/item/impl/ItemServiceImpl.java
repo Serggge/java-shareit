@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exception.BookingNotFoundException;
+import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.exception.BookingNotAvailableException;
 import ru.practicum.shareit.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -61,13 +62,15 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Вещь с id=%d не найдена", itemId)));
         List<CommentDto> commentDtos = commentMapper.mapToDto(commentRepository.findByItemId(itemId));
+        List<Booking> bookings;
         if (item.getOwner().getId() != userId) {
-            return itemMapper.toOwnerDto(item, commentDtos, null, null);
+            return itemMapper.toOwnerDto(item, commentDtos,null, null);
         } else {
-            List<Booking> bookings = bookingRepository.findAllByItemId(itemId);
+            bookings = bookingRepository.findAllByItemId(itemId);
             return itemMapper.toOwnerDto(item, commentDtos,
                     defineLastBooking(bookings), defineNextBooking(bookings));
         }
+
     }
 
     @Override
@@ -83,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
         Map<Long, Item> mapItems = itemRepository.findAllByOwnerId(userId)
                 .stream()
                 .collect(Collectors.toMap(Item::getId, Function.identity()));
-        Map<Long, List<Booking>> mapBookings = bookingRepository.findAllByItemId(mapItems.keySet())
+        Map<Long, List<Booking>> mapBookings = bookingRepository.findAllByItemIdAndOwnerId(mapItems.keySet())
                 .stream()
                 .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
         Map<Long, List<Comment>> mapComments = commentRepository.findAllByItemId(mapItems.keySet())
@@ -112,9 +115,8 @@ public class ItemServiceImpl implements ItemService {
         User author = userService.getById(userId);
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Вещь с id=%d не найдена", itemId)));
-        Optional<Booking> optionalBooking = bookingRepository.findByItemIdAndBookerId(itemId, userId);
-        if (optionalBooking.isEmpty()) {
-            throw new BookingNotFoundException(
+        if (bookingRepository.findSuccessfulUserBooking(itemId, userId).isEmpty()) {
+            throw new BookingNotAvailableException(
                     String.format("Пользователь id=%d не пользовался вещью id=%d", userId, itemId));
         }
         Comment comment = commentMapper.mapToComment(commentDto);
@@ -171,8 +173,8 @@ public class ItemServiceImpl implements ItemService {
         } else {
             LocalDateTime now = LocalDateTime.now();
             return bookings.stream()
-                    .filter(booking -> booking.getEnd().isBefore(now))
-                    .max(Comparator.comparing(Booking::getEnd))
+                    .filter(booking -> booking.getStart().isBefore(now))
+                    .max(Comparator.comparing(Booking::getStart))
                     .orElse(null);
         }
     }
@@ -184,6 +186,7 @@ public class ItemServiceImpl implements ItemService {
             LocalDateTime now = LocalDateTime.now();
             return bookings.stream()
                     .filter(booking -> booking.getStart().isAfter(now))
+                    .filter(booking -> !booking.getStatus().equals(Status.REJECTED))
                     .min(Comparator.comparing(Booking::getStart))
                     .orElse(null);
         }

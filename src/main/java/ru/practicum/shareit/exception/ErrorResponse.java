@@ -1,7 +1,6 @@
 package ru.practicum.shareit.exception;
 
 import lombok.Getter;
-import java.time.LocalDateTime;
 
 @Getter
 public class ErrorResponse {

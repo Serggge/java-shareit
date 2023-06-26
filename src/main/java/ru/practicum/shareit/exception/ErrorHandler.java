@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.validation.FieldError;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,6 +77,13 @@ public class ErrorHandler {
     @ExceptionHandler({BookingNotAvailableException.class, BookingDateTimeException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBookingException(RuntimeException exception) {
+        log(exception);
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleCommentNotAllowedException(CommentNotAllowedException exception) {
         log(exception);
         return new ErrorResponse(exception.getMessage());
     }

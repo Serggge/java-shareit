@@ -34,7 +34,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByItemId(long itemId);
 
-    Optional<Booking> findByItemIdAndBookerId(long itemId, long bookerId);
+    @Query(value = "select b.id from bookings as b " +
+            "join users as u on u.id = b.user_id " +
+            "join items as it on it.id = b.item_id " +
+            "where it.id = ?1 and u.id = ?2 " +
+            "and status = 'APPROVED' " +
+            "and start_booking < NOW() " +
+            "limit 1", nativeQuery = true)
+    Optional<Long> findSuccessfulUserBooking(long itemId, long bookerId);
 
     @Query("select b " +
             "from Booking as b " +
@@ -51,6 +58,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "join b.booker as u " +
             "join b.item as it " +
             "where it.id in ?1")
-    List<Booking> findAllByItemId(Iterable<Long> ids);
+    List<Booking> findAllByItemIdAndOwnerId(Iterable<Long> ids);
 
 }
