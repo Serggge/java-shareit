@@ -21,7 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User add(User user) {
-        checkUserAlreadyRegistered(user);
+        //checkUserAlreadyRegistered(user);
         user = userRepository.save(user);
         log.info("Создан новый пользователь: {}", user);
         return user;
@@ -64,8 +64,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkUserAlreadyRegistered(User user) {
-        Optional<Long> registeredUserId = userRepository.findUserIdByEmail(user.getEmail());
-        if (registeredUserId.isPresent() && registeredUserId.get() != user.getId()) {
+        Optional<User> registeredUser = userRepository.findByEmailContainingIgnoreCase(user.getEmail());
+        if (registeredUser.isPresent() && !registeredUser.get().getId().equals(user.getId())) {
             throw new EmailExistingException(
                     String.format("Пользователь с email: %s уже зарегистрирован", user.getEmail()));
         }

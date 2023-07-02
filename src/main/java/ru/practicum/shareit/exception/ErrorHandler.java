@@ -74,6 +74,20 @@ public class ErrorHandler {
         return new ErrorResponse(exception.getMessage());
     }
 
+    @ExceptionHandler({BookingNotAvailableException.class, BookingDateTimeException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBookingException(RuntimeException exception) {
+        log(exception);
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleCommentNotAllowedException(CommentNotAllowedException exception) {
+        log(exception);
+        return new ErrorResponse(exception.getMessage());
+    }
+
     private void log(Exception ex) {
         log.warn("{}: {}", ex.getClass().getSimpleName(), ex.getMessage());
     }
