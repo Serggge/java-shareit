@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import ru.practicum.shareit.exception.ItemRequestNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.impl.ItemMapperImpl;
 import ru.practicum.shareit.item.model.Item;
@@ -31,10 +32,12 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -105,6 +108,17 @@ class ItemRequestServiceImplTest {
         assertThat(returnedDto.getId(), equalTo(itemRequestId));
         verify(userService).getById(user.getId());
         verify(itemRequestRepository).save(any());
+    }
+
+    @Test
+    void getById_whenItemRequestIdNotExist_thenThrowItemRequestNotFoundException() {
+        when(itemRequestRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        ItemRequestNotFoundException exception = assertThrows(ItemRequestNotFoundException.class, () ->
+                itemRequestService.getById(user.getId(), itemRequest.getId()));
+
+        assertThat(exception.getMessage(), equalTo("Не найден запрос с id=" + itemRequest.getId()));
+        verify(itemRepository, never()).findAllByItemRequestId(anyLong());
     }
 
     @Test

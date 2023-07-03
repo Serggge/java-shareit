@@ -15,6 +15,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.exception.BookingNotAvailableException;
 import ru.practicum.shareit.exception.ItemNotFoundException;
+import ru.practicum.shareit.exception.ItemRequestNotFoundException;
 import ru.practicum.shareit.item.CommentMapper;
 import ru.practicum.shareit.item.CommentRepository;
 import ru.practicum.shareit.item.ItemMapper;
@@ -132,6 +133,23 @@ class ItemServiceImplTest {
 
     @AfterEach
     void tearDown() {
+    }
+
+    @Test
+    void add_whenItemRequestIdNotPresent_thenReturnItemRequestNotFoundException() {
+        long itemId = random.nextInt(32);
+        when(userService.getById(anyLong())).thenReturn(user);
+        when(itemRequestRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        ItemRequestNotFoundException exception = assertThrows(ItemRequestNotFoundException.class, () ->
+                itemService.add(user.getId(), itemDto));
+
+        assertThat(exception.getMessage(), equalTo("Не найден запрос с id=" + itemRequest.getId()));
+        verify(userService).getById(user.getId());
+        verify(itemRequestRepository).findById(itemRequest.getId());
+        verify(itemRepository, never()).save(any());
+        verifyNoMoreInteractions(userService, itemRequestRepository);
+
     }
 
     @Test

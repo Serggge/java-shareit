@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -26,11 +28,16 @@ import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.impl.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -179,6 +186,7 @@ class BookingServiceImplTest {
         BookingDto savedDto = bookingService.addNew(booker.getId(), bookingDto);
 
         booking.setId(bookingId);
+        booking.setStatus(Status.WAITING);
         assertThat(savedDto, notNullValue());
         assertThat(savedDto.getId(), equalTo(bookingId));
         assertThat(savedDto.getStatus(), equalTo(Status.WAITING));
@@ -290,10 +298,187 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getUserBookings() {
+    void getUserBookings_whenIncomingIncorrectState_thenThrowIllegalArgumentException() {
+        String state = "state";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                bookingService.getUserBookings(booker.getId(), state, 0, 2));
+
+        assertThat(exception.getMessage(), equalTo("Unknown state: " + state));
     }
 
     @Test
-    void getItemsBookings() {
+    void getUserBookings_whenIncomingStateIsALL_thenReturnAllUserBookings() {
+        String state = "ALL";
+        when(bookingRepository.findAllByBookerIdOrderByStartDesc(anyLong(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByBookerIdOrderByStartDesc(booker.getId(), PageRequest.of(0, 2));
     }
+
+    @Test
+    void getUserBookings_whenIncomingStateIsPast_thenReturnPastUserBookings() {
+        String state = "PAST";
+        when(bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any())).thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByBookerIdAndEndBeforeOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any());
+    }
+
+    @Test
+    void getUserBookings_whenIncomingStateIsFuture_thenReturnFutureUserBookings() {
+        String state = "FUTURE";
+        when(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any())).thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByBookerIdAndStartAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any());
+    }
+
+    @Test
+    void getUserBookings_whenIncomingStateIsCurrent_thenReturnCurrentUserBookings() {
+        String state = "CURRENT";
+        when(bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any(LocalDateTime.class), any())).thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any(LocalDateTime.class), any());
+    }
+
+    @Test
+    void getUserBookings_whenIncomingStateIsWaiting_thenReturnWaitingUserBookings() {
+        String state = "WAITING";
+        when(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any())).
+                thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByBookerIdAndStatusOrderByStartDesc(booker.getId(), Status.WAITING,
+                PageRequest.of(0,2));
+    }
+
+    @Test
+    void getUserBookings_whenIncomingStateIsRejected_thenReturnRejectedUserBookings() {
+        String state = "REJECTED";
+        when(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any())).
+                thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByBookerIdAndStatusOrderByStartDesc(booker.getId(), Status.REJECTED,
+                PageRequest.of(0,2));
+    }
+
+    @Test
+    void getItemsBookings_whenIncomingIncorrectState_thenThrowIllegalArgumentException() {
+        String state = "state";
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                bookingService.getItemsBookings(owner.getId(), state, 0, 2));
+
+        assertThat(exception.getMessage(), equalTo("Unknown state: " + state));
+    }
+
+    @Test
+    void getItemsBookings_whenIncomingStateIsALL_thenReturnAllUserBookings() {
+        String state = "ALL";
+        when(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(anyLong(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getItemsBookings(owner.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByItemOwnerIdOrderByStartDesc(owner.getId(), PageRequest.of(0, 2));
+    }
+
+    @Test
+    void getItemsBookings_whenIncomingStateIsPast_thenReturnPastUserBookings() {
+        String state = "PAST";
+        when(bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any())).thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getItemsBookings(owner.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any());
+    }
+
+    @Test
+    void getItemsBookings_whenIncomingStateIsFuture_thenReturnFutureUserBookings() {
+        String state = "FUTURE";
+        when(bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any())).thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getItemsBookings(owner.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByItemOwnerIdAndStartAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any());
+    }
+
+    @Test
+    void getItemsBookings_whenIncomingStateIsCurrent_thenReturnCurrentUserBookings() {
+        String state = "CURRENT";
+        when(bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any(LocalDateTime.class), any())).thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getItemsBookings(owner.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(anyLong(),
+                any(LocalDateTime.class), any(LocalDateTime.class), any());
+    }
+
+    @Test
+    void getItemsBookings_whenIncomingStateIsWaiting_thenReturnWaitingUserBookings() {
+        String state = "WAITING";
+        when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any())).
+                thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getItemsBookings(owner.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByItemOwnerIdAndStatusOrderByStartDesc(owner.getId(), Status.WAITING,
+                PageRequest.of(0,2));
+    }
+
+    @Test
+    void getItemsBookings_whenIncomingStateIsRejected_thenReturnRejectedUserBookings() {
+        String state = "REJECTED";
+        when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any())).
+                thenReturn(new PageImpl<>(List.of(booking)));
+
+        List<BookingDto> result = bookingService.getItemsBookings(owner.getId(), state, 0, 2);
+
+        assertThat(result, allOf(notNullValue(), hasSize(1)));
+        assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
+        verify(bookingRepository).findAllByItemOwnerIdAndStatusOrderByStartDesc(owner.getId(), Status.REJECTED,
+                PageRequest.of(0,2));
+    }
+
 }

@@ -82,7 +82,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserAccessException(UserAccessException exception) {
         log(exception);
         return new ErrorResponse(exception.getMessage());
