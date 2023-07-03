@@ -22,6 +22,9 @@ public class ItemMapperImpl implements ItemMapper {
         dto.setName(item.getName());
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
+        if (item.getItemRequest() != null) {
+            dto.setRequestId(item.getItemRequest().getId());
+        }
         return dto;
     }
 
@@ -42,6 +45,9 @@ public class ItemMapperImpl implements ItemMapper {
         dto.setName(item.getName());
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
+        if (item.getItemRequest() != null) {
+            dto.setRequestId(item.getItemRequest().getId());
+        }
         SimpleBookingDto simpleLastBookingDto = null;
         if (lastBooking != null) {
             simpleLastBookingDto = new SimpleBookingDto(lastBooking.getId(), lastBooking.getBooker().getId(),

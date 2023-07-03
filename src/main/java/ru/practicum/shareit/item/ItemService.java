@@ -15,9 +15,9 @@ public interface ItemService {
 
     void deleteById(long itemId);
 
-    List<ItemOwnerDto> getItemsByUserId(long userId);
+    List<ItemOwnerDto> getItemsByUserId(long userId, int from, int size);
 
-    List<ItemDto> getByQuery(String query);
+    List<ItemDto> getByQuery(String query, int from, int size);
 
     CommentDto addComment(long userId, long itemId, CommentDto commentDto);
 
