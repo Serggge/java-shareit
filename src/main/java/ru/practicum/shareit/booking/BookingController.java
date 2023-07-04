@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.practicum.shareit.booking.dto.BookingDto;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.List;

@@ -9,6 +9,7 @@ import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +22,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User add(User user) {
-        //checkUserAlreadyRegistered(user);
         user = userRepository.save(user);
         log.info("Создан новый пользователь: {}", user);
         return user;
