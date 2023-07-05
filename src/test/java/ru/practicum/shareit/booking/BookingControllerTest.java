@@ -42,7 +42,7 @@ class BookingControllerTest {
 
     @BeforeEach
     void setUp() {
-        bookingDto.setStart(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+        bookingDto.setStart(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         bookingDto.setEnd(bookingDto.getStart().plusDays(1));
         bookingDto.setItemId(2L);
     }
@@ -111,9 +111,9 @@ class BookingControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.start", is(bookingDto.getStart()
-                        .truncatedTo(ChronoUnit.MILLIS).toString())))
+                        .truncatedTo(ChronoUnit.SECONDS).toString())))
                 .andExpect(jsonPath("$.end", is(bookingDto.getEnd()
-                        .truncatedTo(ChronoUnit.MILLIS).toString())))
+                        .truncatedTo(ChronoUnit.SECONDS).toString())))
                 .andExpect(jsonPath("$.itemId", is(bookingDto.getItemId()), Long.class));
 
         verify(bookingService, times(1)).getById(bookingDto.getId(), userId);
