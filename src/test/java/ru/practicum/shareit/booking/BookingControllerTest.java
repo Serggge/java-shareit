@@ -6,7 +6,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -14,17 +13,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Status;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.dto.UserDto;
 import java.time.LocalDateTime;
-
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BookingController.class)
 class BookingControllerTest {
@@ -36,69 +34,133 @@ class BookingControllerTest {
     @MockBean
     BookingService bookingService;
     static BookingDto bookingDto;
-    static ItemDto itemDto;
-    static UserDto userDto;
 
     @BeforeAll
     static void beforeAll() {
         bookingDto = new BookingDto();
-        itemDto = new ItemDto();
-        userDto = new UserDto();
     }
 
     @BeforeEach
     void setUp() {
-        bookingDto.setStart(LocalDateTime.now());
+        bookingDto.setStart(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
         bookingDto.setEnd(bookingDto.getStart().plusDays(1));
         bookingDto.setItemId(2L);
-
-        itemDto.setId(2L);
-        itemDto.setName("Дрель");
-        itemDto.setDescription("Простая дрель");
-        itemDto.setAvailable(Boolean.TRUE);
-
-        userDto.setId(3L);
-        userDto.setName("user");
-        userDto.setEmail("user@ya.ru");
     }
 
     @AfterEach
     void tearDown() {
         bookingDto = new BookingDto();
-        itemDto = new ItemDto();
-        userDto = new UserDto();
     }
 
     @Test
     @SneakyThrows
     void create() {
-        when(bookingService.addNew(anyLong(), any(BookingDto.class)))
-                .thenReturn(bookingDto);
+        long userId = 1L;
+        when(bookingService.addNew(anyLong(), any(BookingDto.class))).thenReturn(bookingDto);
 
         mockMvc.perform(post("/bookings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(bookingDto))
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", userDto.getId()))
+                        .header("X-Sharer-User-Id", userId))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
+                .andExpect(jsonPath("$.start", is(bookingDto.getStart().toString())))
+                .andExpect(jsonPath("$.end", is(bookingDto.getEnd().toString())))
+                .andExpect(jsonPath("$.itemId", is(bookingDto.getItemId()), Long.class));
 
-        verify(bookingService, times(1)).addNew(userDto.getId(), bookingDto);
+        verify(bookingService, times(1)).addNew(userId, bookingDto);
+        verifyNoMoreInteractions(bookingService);
     }
 
     @Test
+    @SneakyThrows
     void approve() {
+        String status = "APPROVED";
+        long userId = 1L;
+        bookingDto.setStatus(Status.valueOf(status));
+        when(bookingService.approve(anyLong(), anyLong(), anyString())).thenReturn(bookingDto);
+
+        mockMvc.perform(patch("/bookings/{bookingId}", bookingDto.getId())
+                        .header("X-Sharer-User-Id", userId)
+                        .param("approved", status)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
+                .andExpect(jsonPath("$.start", is(bookingDto.getStart().toString())))
+                .andExpect(jsonPath("$.end", is(bookingDto.getEnd().toString())))
+                .andExpect(jsonPath("$.itemId", is(bookingDto.getItemId()), Long.class))
+                .andExpect(jsonPath("$.status", is(status)));
+
+        verify(bookingService, times(1)).approve(userId, bookingDto.getId(), status);
+        verifyNoMoreInteractions(bookingService);
     }
 
     @Test
+    @SneakyThrows
     void returnById() {
+        long userId = 1L;
+        when(bookingService.getById(anyLong(), anyLong())).thenReturn(bookingDto);
+
+        mockMvc.perform(get("/bookings/{bookingId}", bookingDto.getId())
+                .header("X-Sharer-User-Id", userId)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
+                .andExpect(jsonPath("$.start", is(bookingDto.getStart()
+                        .truncatedTo(ChronoUnit.MILLIS).toString())))
+                .andExpect(jsonPath("$.end", is(bookingDto.getEnd()
+                        .truncatedTo(ChronoUnit.MILLIS).toString())))
+                .andExpect(jsonPath("$.itemId", is(bookingDto.getItemId()), Long.class));
+
+        verify(bookingService, times(1)).getById(bookingDto.getId(), userId);
+        verifyNoMoreInteractions(bookingService);
     }
 
     @Test
+    @SneakyThrows
     void returnUserBookings() {
+        long userId = 1L;
+        String state = "ALL";
+        List<BookingDto> dtos = List.of(new BookingDto(), new BookingDto());
+        when(bookingService.getUserBookings(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(dtos);
+
+        mockMvc.perform(get("/bookings")
+                .header("X-Sharer-User-Id", userId)
+                .param("state", state)
+                .param("from", "0")
+                .param("size", "2")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(2)));
+
+        verify(bookingService, times(1)).getUserBookings(userId, state, 0, 2);
+        verifyNoMoreInteractions(bookingService);
     }
 
     @Test
+    @SneakyThrows
     void returnItemsBookings() {
+        long userId = 1L;
+        String state = "ALL";
+        List<BookingDto> dtos = List.of(new BookingDto(), new BookingDto());
+        when(bookingService.getItemsBookings(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(dtos);
+
+        mockMvc.perform(get("/bookings/owner")
+                        .header("X-Sharer-User-Id", userId)
+                        .param("state", state)
+                        .param("from", "0")
+                        .param("size", "2")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(2)));
+
+        verify(bookingService, times(1)).getItemsBookings(userId, state, 0, 2);
+        verifyNoMoreInteractions(bookingService);
     }
 }
