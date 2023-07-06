@@ -4,52 +4,41 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.impl.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
-
 import java.util.List;
-
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(controllers = UserController.class)
+@SpringJUnitWebConfig({ UserController.class, UserMapperImpl.class})
 class UserControllerTest {
 
-    @Mock
+    @MockBean
     UserService userService;
-    @InjectMocks
-    UserController userController;
     ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
     MockMvc mvc;
     UserDto userDto;
     User user;
 
     @BeforeEach
     void setUp() {
-        mvc = MockMvcBuilders
-                .standaloneSetup(userController)
-                .build();
-        UserMapper userMapper = new UserMapperImpl();
-        ReflectionTestUtils.setField(userController, "userMapper", userMapper);
-
         userDto = new UserDto();
         userDto.setName("UserName");
         userDto.setEmail("user@user.com");
 
-        user = userMapper.toEntity(userDto);
-        user.setId(1L);
+        user = new User(1L, userDto.getName(), userDto.getEmail());
     }
 
     @Test

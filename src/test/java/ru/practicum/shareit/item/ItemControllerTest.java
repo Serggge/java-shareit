@@ -175,7 +175,7 @@ class ItemControllerTest {
         long userId = 1L;
         long itemId = itemDto.getId();
         CommentDto commentDto = new CommentDto(1L, "some text", "author name",
-                LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+                LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         when(itemService.addComment(anyLong(), anyLong(), any(CommentDto.class))).thenReturn(commentDto);
 
         mockMvc.perform(post("/items/{itemId}/comment", itemId)
@@ -188,7 +188,7 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.text", is(commentDto.getText())))
                 .andExpect(jsonPath("$.authorName", is(commentDto.getAuthorName())))
                 .andExpect(jsonPath("$.created", is(commentDto.getCreated()
-                        .truncatedTo(ChronoUnit.MILLIS).toString())));
+                        .truncatedTo(ChronoUnit.SECONDS).toString())));
 
         verify(itemService, times(1)).addComment(userId, itemId, commentDto);
         verifyNoMoreInteractions(itemService);

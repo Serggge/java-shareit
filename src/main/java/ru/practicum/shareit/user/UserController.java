@@ -1,7 +1,9 @@
 package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,12 +21,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequiredArgsConstructor(onConstructor__ = @Autowired)
+@Setter
 @RequestMapping(path = "/users")
 public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+
+    public UserController(UserService userService,
+                          @Qualifier("userMapper") UserMapper userMapper) {
+        this.userService = userService;
+        this.userMapper = userMapper;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

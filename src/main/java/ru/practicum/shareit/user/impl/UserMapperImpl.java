@@ -5,7 +5,7 @@ import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
-@Component
+@Component("userMapper")
 public class UserMapperImpl implements UserMapper {
 
     @Override
