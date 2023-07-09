@@ -34,6 +34,7 @@ class ItemControllerTest {
     @MockBean
     ItemService itemService;
     ItemDto itemDto;
+    ItemOwnerDto itemOwnerDto;
 
     @BeforeEach
     void setUp() {
@@ -42,6 +43,12 @@ class ItemControllerTest {
         itemDto.setName("ItemName");
         itemDto.setDescription("Item description");
         itemDto.setAvailable(Boolean.TRUE);
+
+        itemOwnerDto = new ItemOwnerDto();
+        itemOwnerDto.setId(itemDto.getId());
+        itemOwnerDto.setName(itemDto.getName());
+        itemOwnerDto.setDescription(itemDto.getDescription());
+        itemOwnerDto.setAvailable(itemDto.getAvailable());
     }
 
     @AfterEach
@@ -99,7 +106,7 @@ class ItemControllerTest {
     void returnItemById() {
         long userId = 1L;
         long itemId = itemDto.getId();
-        when(itemService.getById(anyLong(), anyLong())).thenReturn(itemDto);
+        when(itemService.getById(anyLong(), anyLong())).thenReturn(itemOwnerDto);
 
         mockMvc.perform(get("/items/{id}", itemId)
                         .header("X-Sharer-User-Id", userId)

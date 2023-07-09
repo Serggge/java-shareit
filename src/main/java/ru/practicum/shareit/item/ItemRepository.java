@@ -17,7 +17,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "and it.available=true")
     Page<Item> findAllByQuery(String query, Pageable pageable);
 
-    Page<Item> findAllByOwnerId(long id, Pageable pageable);
+    Page<Item> findAllByOwnerId(long ownerId, Pageable pageable);
 
     @Query("select u.id " +
             "from Item as it " +

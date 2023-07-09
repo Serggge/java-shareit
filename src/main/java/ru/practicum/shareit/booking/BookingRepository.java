@@ -60,6 +60,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "join b.booker as u " +
             "join b.item as it " +
             "where it.id in ?1")
-    List<Booking> findAllByItemIdAndOwnerId(Iterable<Long> ids);
+    List<Booking> findAllByItemId(Iterable<Long> ids);
 
 }

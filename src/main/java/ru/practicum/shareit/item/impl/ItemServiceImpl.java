@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
@@ -24,7 +23,6 @@ import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequestRepository;
-import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
@@ -48,14 +46,24 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final UserService userService;
     private final ItemRequestRepository itemRequestRepository;
-    private final ItemMapper itemMapper;
-    private final CommentMapper commentMapper;
+    private ItemMapper itemMapper;
+    private CommentMapper commentMapper;
+
+    @Autowired
+    public void setItemMapper(ItemMapper itemMapper) {
+        this.itemMapper = itemMapper;
+    }
+
+    @Autowired
+    public void setCommentMapper(CommentMapper commentMapper) {
+        this.commentMapper = commentMapper;
+    }
 
     @Override
     public ItemDto add(long userId, ItemDto dto) {
         Item item = itemMapper.toEntity(dto);
-        User user = userService.getById(userId);
-        item = item.withOwner(user);
+        User owner = userService.getById(userId);
+        item.setOwner(owner);
         if (dto.getRequestId() != null) {
             long itemRequestId = dto.getRequestId();
             ItemRequest itemRequest = itemRequestRepository.findById(itemRequestId)
@@ -80,10 +88,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getById(long userId, long itemId) {
+    public ItemOwnerDto getById(long userId, long itemId) {
         log.debug("Запрос вещи по id: " + itemId);
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
-                new ItemNotFoundException(String.format("Вещь с id=%d не найдена", itemId)));
+              new ItemNotFoundException(String.format("Вещь с id=%d не найдена", itemId)));
         List<CommentDto> commentDtos = commentMapper.mapToDto(commentRepository.findByItemId(itemId));
         List<Booking> bookings;
         if (item.getOwner().getId() != userId) {
@@ -111,7 +119,7 @@ public class ItemServiceImpl implements ItemService {
         Map<Long, Item> mapItems = itemRepository.findAllByOwnerId(userId, page)
                 .stream()
                 .collect(Collectors.toMap(Item::getId, Function.identity()));
-        Map<Long, List<Booking>> mapBookings = bookingRepository.findAllByItemIdAndOwnerId(mapItems.keySet())
+        Map<Long, List<Booking>> mapBookings = bookingRepository.findAllByItemId(mapItems.keySet())
                 .stream()
                 .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
         Map<Long, List<Comment>> mapComments = commentRepository.findAllByItemId(mapItems.keySet())

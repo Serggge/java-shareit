@@ -26,7 +26,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRequestRepository itemRequestRepository;
     private final UserService userService;
     private final ItemRepository itemRepository;
-    private final ItemRequestMapper itemRequestMapper;
+    private ItemRequestMapper itemRequestMapper;
+
+    @Autowired
+    public void setItemRequestMapper(ItemRequestMapper itemRequestMapper) {
+        this.itemRequestMapper = itemRequestMapper;
+    }
 
     @Override
     public ItemRequestDto add(long userId, ItemRequestDto itemRequestDto) {

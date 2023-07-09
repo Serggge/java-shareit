@@ -25,10 +25,6 @@ public class ItemRequest {
     @Transient
     private Set<Item> items = new HashSet<>();
 
-    public void addItem(Item item) {
-        items.add(item);
-    }
-
     public void addItems(Iterable<Item> itemCollection) {
         for (Item item : itemCollection) {
             items.add(item);
