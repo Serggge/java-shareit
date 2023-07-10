@@ -26,7 +26,8 @@ class UserControllerTest {
 
     @MockBean
     UserService userService;
-    ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    ObjectMapper objectMapper;
     @Autowired
     MockMvc mvc;
     UserDto userDto;

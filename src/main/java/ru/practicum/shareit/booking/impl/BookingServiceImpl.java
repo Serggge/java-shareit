@@ -18,6 +18,7 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,7 +29,12 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserService userService;
-    private final BookingMapper bookingMapper;
+    private BookingMapper bookingMapper;
+
+    @Autowired
+    public void setBookingMapper(BookingMapper bookingMapper) {
+        this.bookingMapper = bookingMapper;
+    }
 
     @Override
     public BookingDto addNew(long userId, BookingDto bookingDto) {
@@ -44,12 +50,12 @@ public class BookingServiceImpl implements BookingService {
         Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Вещь с id=%d не найдена", bookingDto.getItemId())));
         if (!item.getAvailable()
-                || bookingRepository.hasBooking(item.getId(), booking.getStart(), booking.getEnd())
+                || bookingRepository.findBookingByDate(item.getId(), booking.getStart(), booking.getEnd())
                 .isPresent()) {
             throw new BookingNotAvailableException("вещь недоступна для бронирования");
         }
         if (item.getOwner().getId().equals(booking.getBooker().getId())) {
-            throw new BookingNotFoundException("Бронирование не найдено");
+            throw new BookingNotFoundException("Владелец не может бронировать свою вещь");
         }
         booking.setItem(item);
         booking.setStatus(Status.WAITING);
@@ -67,17 +73,13 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getStatus().equals(Status.WAITING)) {
             throw new IllegalArgumentException("Статус был подтверждён владельцем ранее");
         }
-        try {
-            boolean isApprove = Boolean.parseBoolean(approved);
-            if (isApprove) {
-                booking.setStatus(Status.APPROVED);
-            } else {
-                booking.setStatus(Status.REJECTED);
-            }
-            booking = bookingRepository.save(booking);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Недопустимый параметр approve");
+        boolean isApprove = Boolean.parseBoolean(approved);
+        if (isApprove) {
+            booking.setStatus(Status.APPROVED);
+        } else {
+            booking.setStatus(Status.REJECTED);
         }
+        booking = bookingRepository.save(booking);
         return bookingMapper.mapToDto(booking);
     }
 
@@ -88,7 +90,7 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
             return bookingMapper.mapToDto(booking);
         } else {
-            throw new UserNotFoundException("Пользователю запрещёно просматривать информацию по бронированию");
+            throw new UserAccessException("Пользователю запрещёно просматривать информацию по бронированию");
         }
     }
 

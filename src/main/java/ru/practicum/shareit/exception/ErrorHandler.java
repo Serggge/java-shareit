@@ -82,11 +82,12 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleCommentNotAllowedException(CommentNotAllowedException exception) {
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleUserAccessException(UserAccessException exception) {
         log(exception);
         return new ErrorResponse(exception.getMessage());
     }
+
 
     private void log(Exception ex) {
         log.warn("{}: {}", ex.getClass().getSimpleName(), ex.getMessage());
