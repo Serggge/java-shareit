@@ -27,14 +27,17 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.impl.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
@@ -363,29 +366,29 @@ class BookingServiceImplTest {
     @Test
     void getUserBookings_whenIncomingStateIsWaiting_thenReturnWaitingUserBookings() {
         String state = "WAITING";
-        when(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any())).
-                thenReturn(new PageImpl<>(List.of(booking)));
+        when(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
 
         List<BookingDto> result = bookingService.getUserBookings(booker.getId(), state, 0, 2);
 
         assertThat(result, allOf(notNullValue(), hasSize(1)));
         assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
         verify(bookingRepository).findAllByBookerIdAndStatusOrderByStartDesc(booker.getId(), Status.WAITING,
-                PageRequest.of(0,2));
+                PageRequest.of(0, 2));
     }
 
     @Test
     void getUserBookings_whenIncomingStateIsRejected_thenReturnRejectedUserBookings() {
         String state = "REJECTED";
-        when(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any())).
-                thenReturn(new PageImpl<>(List.of(booking)));
+        when(bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
 
         List<BookingDto> result = bookingService.getUserBookings(booker.getId(), state, 0, 2);
 
         assertThat(result, allOf(notNullValue(), hasSize(1)));
         assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
         verify(bookingRepository).findAllByBookerIdAndStatusOrderByStartDesc(booker.getId(), Status.REJECTED,
-                PageRequest.of(0,2));
+                PageRequest.of(0, 2));
     }
 
     @Test
@@ -455,29 +458,29 @@ class BookingServiceImplTest {
     @Test
     void getItemsBookings_whenIncomingStateIsWaiting_thenReturnWaitingUserBookings() {
         String state = "WAITING";
-        when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any())).
-                thenReturn(new PageImpl<>(List.of(booking)));
+        when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
 
         List<BookingDto> result = bookingService.getItemsBookings(owner.getId(), state, 0, 2);
 
         assertThat(result, allOf(notNullValue(), hasSize(1)));
         assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
         verify(bookingRepository).findAllByItemOwnerIdAndStatusOrderByStartDesc(owner.getId(), Status.WAITING,
-                PageRequest.of(0,2));
+                PageRequest.of(0, 2));
     }
 
     @Test
     void getItemsBookings_whenIncomingStateIsRejected_thenReturnRejectedUserBookings() {
         String state = "REJECTED";
-        when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any())).
-                thenReturn(new PageImpl<>(List.of(booking)));
+        when(bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(Status.class), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
 
         List<BookingDto> result = bookingService.getItemsBookings(owner.getId(), state, 0, 2);
 
         assertThat(result, allOf(notNullValue(), hasSize(1)));
         assertThat(result, hasItem(bookingMapper.mapToDto(booking)));
         verify(bookingRepository).findAllByItemOwnerIdAndStatusOrderByStartDesc(owner.getId(), Status.REJECTED,
-                PageRequest.of(0,2));
+                PageRequest.of(0, 2));
     }
 
 }
