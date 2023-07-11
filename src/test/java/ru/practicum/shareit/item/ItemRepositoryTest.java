@@ -82,6 +82,7 @@ class ItemRepositoryTest {
 
         assertThat(item.getId()).isNotNull();
     }
+
     @Test
     void verifyRepositoryByPersistingItem() {
         assertThat(item.getId()).isNull();

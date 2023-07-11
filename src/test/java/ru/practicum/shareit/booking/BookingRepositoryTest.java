@@ -84,6 +84,7 @@ class BookingRepositoryTest {
 
         assertThat(booking.getId()).isNotNull();
     }
+
     @Test
     void verifyRepositoryByPersistingBooking() {
         assertThat(booking.getId()).isNull();
