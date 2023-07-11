@@ -147,7 +147,7 @@ class BookingServiceImplTest {
     @Test
     void addNew_whenItemAlreadyBooked_thenThrowBookingNotAvailableException() {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
-        when(bookingRepository.findBookingByDate(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(bookingRepository.findBookingWithSameDate(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(Optional.of(booking));
 
         BookingNotAvailableException exception = assertThrows(BookingNotAvailableException.class, () ->
@@ -162,7 +162,7 @@ class BookingServiceImplTest {
         booking.setBooker(owner);
         when(userService.getById(anyLong())).thenReturn(owner);
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
-        when(bookingRepository.findBookingByDate(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(bookingRepository.findBookingWithSameDate(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(Optional.empty());
 
         BookingNotFoundException exception = assertThrows(BookingNotFoundException.class, () ->
@@ -177,7 +177,7 @@ class BookingServiceImplTest {
         long bookingId = random.nextInt(32);
         when(userService.getById(anyLong())).thenReturn(booker);
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
-        when(bookingRepository.findBookingByDate(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(bookingRepository.findBookingWithSameDate(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(Optional.empty());
         when(bookingRepository.save(any(Booking.class))).thenAnswer(invocationOnMock -> {
             Booking argBooking = invocationOnMock.getArgument(0, Booking.class);
@@ -195,7 +195,7 @@ class BookingServiceImplTest {
         assertThat(savedDto, equalTo(bookingMapper.mapToDto(booking)));
         verify(userService).getById(booker.getId());
         verify(itemRepository).findById(item.getId());
-        verify(bookingRepository).findBookingByDate(item.getId(), bookingDto.getStart(), bookingDto.getEnd());
+        verify(bookingRepository).findBookingWithSameDate(item.getId(), bookingDto.getStart(), bookingDto.getEnd());
         verify(bookingRepository).save(any());
     }
 
