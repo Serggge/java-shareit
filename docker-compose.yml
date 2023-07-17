@@ -1,0 +1,59 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15.3-alpine
+    container_name: shareit_db_container
+    ports:
+      - "6541:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+    healthcheck:
+      test: curl --fail -s http://localhost:5432/ || exit 1
+      interval: 30s
+      timeout: 1m30s
+      retries: 3
+    environment:
+      - POSTGRES_DB=shareit
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+  server:
+    build: ./server/
+    image: server_image
+    container_name: shareit_server_container
+    ports:
+      - "9090:9090"
+      - "9091:9091"
+    depends_on:
+      - db
+    healthcheck:
+      test: curl --fail -s http://localhost:9090/ || exit 1
+      interval: 30s
+      timeout: 1m30s
+      retries: 3
+    environment:
+      - TZ=Europe/Moscow
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
+      - SERVER_PORT=9090
+      - DB_HOST=shareit_db_container
+      - DB_PORT=5432
+      - DB_NAME=shareit
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+  gateway:
+    build: ./gateway/
+    image: gateway_image
+    container_name: shareit_gateway_container
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - server
+    healthcheck:
+      test: curl --fail -s http://localhost:8080/ || exit 1
+      interval: 30s
+      timeout: 1m30s
+      retries: 3
+    environment:
+      - TZ=Europe/Moscow
+      - GATEWAY_PORT=8080
+      - SHAREIT_SERVER_URL=http://server:9090
