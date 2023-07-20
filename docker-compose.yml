@@ -31,7 +31,7 @@ services:
       timeout: 1m30s
       retries: 3
     environment:
-      - TZ=Europe/Moscow
+      #- TZ=Europe/Moscow
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
       - SERVER_PORT=9090
       - DB_HOST=shareit_db_container
@@ -54,6 +54,6 @@ services:
       timeout: 1m30s
       retries: 3
     environment:
-      - TZ=Europe/Moscow
+      #- TZ=Europe/Moscow
       - GATEWAY_PORT=8080
       - SHAREIT_SERVER_URL=http://server:9090
