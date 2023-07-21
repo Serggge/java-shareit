@@ -11,7 +11,7 @@ services:
       test: curl --fail -s http://localhost:5432/ || exit 1
       interval: 30s
       timeout: 1m30s
-      retries: 3
+      retries: 30
     environment:
       - POSTGRES_DB=shareit
       - POSTGRES_USER=root
@@ -29,7 +29,7 @@ services:
       test: curl --fail -s http://localhost:9090/ || exit 1
       interval: 30s
       timeout: 1m30s
-      retries: 3
+      retries: 30
     environment:
       #- TZ=Europe/Moscow
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
